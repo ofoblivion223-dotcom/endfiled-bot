@@ -30,7 +30,10 @@ const commands = [
         .setDescription('現在のタスク状況を表示します'),
     new SlashCommandBuilder()
         .setName('help')
-        .setDescription('Botの使い方案内を表示します')
+        .setDescription('Botの使い方案内を表示します'),
+    new SlashCommandBuilder()
+        .setName('test-reminder')
+        .setDescription('【管理者用】朝4時の通知を今すぐテスト送信します')
 ].map(command => command.toJSON());
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 // コマンドのグローバル登録
@@ -90,6 +93,11 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         if (commandName === 'help') {
             await interaction.reply({ embeds: [embeds.createHelpEmbed()], ephemeral: true });
+        }
+        if (commandName === 'test-reminder') {
+            await interaction.reply({ content: 'テストリマインドを送信中...', ephemeral: true });
+            await scheduler.sendDailyReminders(client);
+            await interaction.editReply('テストリマインドの送信が完了しました！チャンネルを確認してください。');
         }
     }
     // ボタン操作
