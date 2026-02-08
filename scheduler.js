@@ -1,26 +1,21 @@
 const cron = require('node-cron');
 const db = require('./database');
 const embeds = require('./utils/embeds');
-
 /**
  * 全ギルドの通知チャンネルへ定期リマインドを送信
  */
 async function sendDailyReminders(client) {
     console.log('Running daily reminder task...');
-
     // 登録されている全ギルド設定を取得
     const { data: configs, error } = await db.supabase
         .from('guild_configs')
         .select('*');
-
     if (error) {
         console.error('Failed to fetch guild configs:', error);
         return;
     }
-
     for (const config of configs) {
         if (!config.channelId) continue;
-
         try {
             const channel = await client.channels.fetch(config.channelId);
             if (channel) {
@@ -37,7 +32,6 @@ async function sendDailyReminders(client) {
         }
     }
 }
-
 function initScheduler(client) {
     // 毎日午前 4:00 (JST) に通知を送信 (UTCでは19:00)
     // クラウドサーバーのタイムゾーンに注意が必要
@@ -47,10 +41,8 @@ function initScheduler(client) {
         scheduled: true,
         timezone: "Asia/Tokyo"
     });
-
     console.log('Scheduler initialized: Daily reminder set for 04:00 JST');
 }
-
 module.exports = {
     initScheduler
 };
