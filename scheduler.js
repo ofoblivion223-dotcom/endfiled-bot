@@ -60,5 +60,6 @@ function initScheduler(client) {
 }
 
 module.exports = {
-    initScheduler
+    initScheduler,
+    sendDailyReminders
 };
