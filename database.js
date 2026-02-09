@@ -8,6 +8,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
  * ギルド（サーバー）設定の取得・作成
  */
 async function getGuildConfig(guildId) {
+    console.log(`Getting config for guild: ${guildId}`);
     const { data, error } = await supabase
         .from('guild_configs')
         .select('*')
@@ -15,15 +16,22 @@ async function getGuildConfig(guildId) {
         .single();
 
     if (error && error.code === 'PGRST116') { // Row not found
+        console.log(`No config found for guild ${guildId}, creating new entry...`);
         const { data: newData, error: insertError } = await supabase
             .from('guild_configs')
             .insert([{ guildId }])
             .select()
             .single();
-        if (insertError) throw insertError;
+        if (insertError) {
+            console.error(`Failed to create config for guild ${guildId}:`, insertError);
+            throw insertError;
+        }
         return newData;
     }
-    if (error) throw error;
+    if (error) {
+        console.error(`Database error in getGuildConfig for guild ${guildId}:`, error);
+        throw error;
+    }
     return data;
 }
 
@@ -31,10 +39,15 @@ async function getGuildConfig(guildId) {
  * ギルドの通知チャンネルIDを更新（存在しなければ新規作成）
  */
 async function updateGuildChannel(guildId, channelId) {
+    console.log(`Updating guild ${guildId} with channel: ${channelId}`);
     const { error } = await supabase
         .from('guild_configs')
         .upsert({ guildId, channelId }, { onConflict: 'guildId' });
-    if (error) throw error;
+    if (error) {
+        console.error(`Database error in updateGuildChannel for guild ${guildId}:`, error);
+        throw error;
+    }
+    console.log(`Successfully saved channel ID for guild ${guildId}.`);
 }
 
 /**
@@ -78,11 +91,11 @@ async function setSpecialDone(userId) {
     const today = new Date().toISOString().split('T')[0];
     const { error } = await supabase
         .from('user_tasks')
-        .update({
+        .upsert({
+            userId,
             specialAnchorDate: today,
             lastSpecialDoneDate: today
-        })
-        .eq('userId', userId);
+        }, { onConflict: 'userId' });
     if (error) throw error;
 }
 
