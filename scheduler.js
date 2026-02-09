@@ -14,9 +14,14 @@ async function sendDailyReminders(client) {
         console.error('Failed to fetch guild configs:', error);
         return;
     }
+    console.log(`Found ${configs?.length || 0} guilds to notify.`);
     for (const config of configs) {
-        if (!config.channelId) continue;
+        if (!config.channelId) {
+            console.log(`Skipping guild ${config.guildId}: No channelId set.`);
+            continue;
+        }
         try {
+            console.log(`Attempting to send reminder to channel ${config.channelId}...`);
             const channel = await client.channels.fetch(config.channelId);
             if (channel) {
                 // そのチャンネルで最近発言したユーザー、またはデフォルトの案内を送信
