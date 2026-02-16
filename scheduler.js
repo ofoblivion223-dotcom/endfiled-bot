@@ -30,11 +30,12 @@ async function sendDailyReminders(client) {
             console.log(`Fetching channel ${config.channelId} for guild ${config.guildId}...`);
             const channel = await client.channels.fetch(config.channelId);
             if (channel) {
-                // 管理者のステータスを取得（設定されていなければ空）
+                // 管理者のステータスを取得（SQLでの追加時に小文字になっている可能性を考慮）
                 let status = {};
-                if (config.adminUserId) {
-                    console.log(`Fetching status for admin user ${config.adminUserId}...`);
-                    status = await db.getUserStatus(config.adminUserId);
+                const adminId = config.adminuserid || config.adminUserId;
+                if (adminId) {
+                    console.log(`Fetching status for admin user ${adminId}...`);
+                    status = await db.getUserStatus(adminId);
                 }
 
                 console.log(`Successfully fetched channel. Sending message...`);
