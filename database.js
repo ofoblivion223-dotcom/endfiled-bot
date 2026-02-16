@@ -42,7 +42,11 @@ async function updateGuildChannel(guildId, channelId, adminUserId) {
     console.log(`Updating guild ${guildId} with channel: ${channelId}, admin: ${adminUserId}`);
     const { error } = await supabase
         .from('guild_configs')
-        .upsert({ guildId, channelId, adminUserId }, { onConflict: 'guildId' });
+        .upsert({
+            guildId,
+            channelId,
+            adminuserid: adminUserId  // 小文字で指定
+        }, { onConflict: 'guildId' });
     if (error) {
         console.error(`Database error in updateGuildChannel for guild ${guildId}:`, error);
         throw error;

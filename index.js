@@ -69,14 +69,20 @@ client.on(Events.InteractionCreate, async interaction => {
         if (commandName === 'setup') {
             await interaction.deferReply({ ephemeral: true });
             try {
-                let channel = guild.channels.cache.find(c => c.name === 'アークナイツ日課');
+                // チャンネルを探す（キャッシュにない場合はフェッチ）
+                let channels = await guild.channels.fetch();
+                let channel = channels.find(c => c.name === 'アークナイツ日課');
+
                 if (!channel) {
                     channel = await guild.channels.create({
                         name: 'アークナイツ日課',
                         type: ChannelType.GuildText
                     });
                 }
+
+                console.log(`Setting up guild ${guild.id} with admin ${user.id}`);
                 await db.updateGuildChannel(guild.id, channel.id, user.id);
+
                 await interaction.editReply(`セットアップが完了しました！通知は <#${channel.id}> に届きます。`);
 
                 // チャンネルに初期メッセージ（ボタン付き）を送信
@@ -87,8 +93,9 @@ client.on(Events.InteractionCreate, async interaction => {
                     components: [embeds.createActionRow()]
                 });
             } catch (error) {
-                console.error(error);
-                await interaction.editReply('セットアップ中にエラーが発生しました。Botにチャンネル作成権限があるか確認してください。');
+                console.error('Setup Error:', error);
+                // エラーの詳細をユーザーに表示（デバッグ用）
+                await interaction.editReply(`セットアップ中にエラーが発生しました。\n理由: \`${error.message}\``);
             }
         }
 
